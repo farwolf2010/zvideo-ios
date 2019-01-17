@@ -486,7 +486,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
     // 将当前时间存储到沙盒,下次进来的时候，就从该时间点继续播放,注意key值是每个url的md5加密,因为每一个url都有自己的当前时间，key值不能定死
     CGFloat currentTime = CMTimeGetSeconds([self.player currentTime]);
     [[NSUserDefaults standardUserDefaults] setFloat:currentTime forKey:SPSeekTimeKey];
-    
+   
     // 保存url
     [[NSUserDefaults standardUserDefaults] setObject:self.videoURL.absoluteString forKey:SPURLKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -598,15 +598,22 @@ typedef NS_ENUM(NSInteger, PanDirection){
     // 每1秒执行一次
     self.timeObserve = [self.player addPeriodicTimeObserverForInterval:CMTimeMakeWithSeconds(1, 1) queue:dispatch_get_main_queue() usingBlock:^(CMTime time){
         AVPlayerItem *currentItem = weakSelf.playerItem;
+        CGFloat totalTime     = (CGFloat)currentItem.duration.value / currentItem.duration.timescale;
+        CGFloat currentTime = CMTimeGetSeconds([currentItem currentTime]);
+        CGFloat per=0;
+        if(totalTime!=0){
+            per=currentTime/totalTime;
+        }
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"onPlayTimer" object:nil userInfo:@{@"current":@(currentTime),@"total":@(totalTime),@"percent":@(per)}];
         
         NSArray *loadedRanges = currentItem.seekableTimeRanges;
         if (loadedRanges.count > 0 && currentItem.duration.timescale != 0) {
-            CGFloat currentTime = CMTimeGetSeconds([currentItem currentTime]);
+           
             // 这个判断是解决当手滑屏幕快进或者使用滑动条快进时，当前秒回弹问题，比如滑到第7秒，然后滑动结束来到此方法时可能当前时间只是6秒，这时会有个回弹现象，不过只有总时间比较小的时候比较明显
             if (currentTime <= weakSelf.dragedSeconds) {
                 currentTime = weakSelf.dragedSeconds;
             }
-            CGFloat totalTime     = (CGFloat)currentItem.duration.value / currentItem.duration.timescale;
+//            CGFloat totalTime     = (CGFloat)currentItem.duration.value / currentItem.duration.timescale;
             CGFloat value         = currentTime / totalTime;
             if (!weakSelf.isDragged) {
                 // 发出播放进度在改变的通知

@@ -14,6 +14,9 @@
 #import "SPVideoPopView.h"
 #import "SPLoadingHUD.h"
 #import "UIImageView+WebCache.h"
+#import "PlayDelegate.h"
+#import "Weex.h"
+
 
 #define kTopViewH 50
 #define kBottomViewH 60
@@ -75,8 +78,8 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 - (instancetype)init {
     self = [super init];
     if (self) {
-                
-//        [self addSubview:self.placeholderView];
+        
+        //        [self addSubview:self.placeholderView];
         [self addSubview:self.topView];
         [self addSubview:self.bottomView];
         [self addSubview:self.lockBtn];
@@ -149,15 +152,18 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     CGFloat seekTime = [notification.userInfo[@"seekTime"] floatValue];
     // 转化为分钟
     double minutesElapsed = floorf(fmod(seekTime, 60.0*60.0)/60.0) ;
-     self.repeatBtn.hidden = YES;
+    self.repeatBtn.hidden = YES;
     switch (state) {
         case SPVideoPlayerPlayStateReadyToPlay:    // 准备播放
-            self.placeholderView.alpha = 0;
+            self.placeholderView.alpha = 1;
             if (seekTime && minutesElapsed >= 1) {
                 [self.placeholderView setPromptLabelTitle:[NSString stringWithFormat:@"上次观看至%.0f分钟,正在续播",minutesElapsed]];
             } else {
                 [self.placeholderView setPromptLabelTitle:@"即将播放"];
                 
+            }
+            if(self.playDelegate!=nil){
+                [self.playDelegate onPrepare];
             }
             break;
         case SPVideoPlayerPlayStatePlaying:        // 正在播放
@@ -170,14 +176,20 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             if (self.showing) {
                 [self sp_playerShowControlView];
             }
+            if(self.playDelegate!=nil){
+                [self.playDelegate onPlaying];
+            }
         }
             break;
         case SPVideoPlayerPlayStatePause:          // 暂停播放
             self.bottomView.playOrPauseButton.selected = NO;
             [self sp_playerCancelAutoFadeOutControlView];
+            if(self.playDelegate!=nil){
+                [self.playDelegate onPause];
+            }
             break;
         case SPVideoPlayerPlayStateBuffering:      // 缓冲中
-            self.placeholderView.alpha = 0;
+            self.placeholderView.alpha = 1;
             // 显示加载指示器
             [self showHUDWithTitle:@"正在全力加载..."];
             break;
@@ -186,15 +198,19 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             break;
         case SPVideoPlayerPlayStateEndedPlay:      // 播放结束
         {
+            if(self.playDelegate!=nil){
+                [self.playDelegate onCompelete];
+            }
             [self hideHUD];
             self.repeatBtn.hidden = NO;
             self.playeEnd         = YES;
             self.showing          = NO;
-//            // 隐藏controlView
+            //            // 隐藏controlView
             [self hideControlView];
             self.backgroundColor  = RGBA(0, 0, 0, .3);
             SPPlayerShared.isStatusBarHidden = NO;
             self.bottomProgressView.alpha = 0;
+            
         }
             break;
         default:
@@ -292,7 +308,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             self.bottomView.videoSlider.thumbBackgroundImage = SPPlayerImage(@"qyplayer_aura2_full_sliderHalo_iphone_108x108_");
         } else {
             self.bottomView.videoSlider.thumbBackgroundImage = SPPlayerImage(@"qyplayer_aura2_mini_sliderHalo_iphone_85x85_");
-
+            
         }
     }
 }
@@ -361,7 +377,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             break;
         case SPVideoPlayerLoadStatusReachableViaWiFi:{
             
-             //self.placeholderView.alpha = 0;
+            //self.placeholderView.alpha = 0;
             
         }
             NSLog(@"WiFi");
@@ -372,7 +388,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         case SPVideoPlayerLoadStatusAbnormal:
             [self hideHUD];
             [self.placeholderView setPromptLabelTitle:@"网络异常，请检查网络连接"];
-            self.placeholderView.alpha = 0;
+            self.placeholderView.alpha = 1;
             NSLog(@"网络异常");
             break;
             
@@ -640,7 +656,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 - (void)showControlView {
     self.showing = YES;
     if (self.lockBtn.isSelected) {
-
+        
         self.topView.alpha = 0;
         self.bottomView.alpha = 0;
         self.cutBtn.alpha = 0;
@@ -649,7 +665,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         self.topView.alpha = 1;
         self.bottomView.alpha = 1;
         if (self.isFullScreenMode) {
-          self.cutBtn.alpha = 1;
+            self.cutBtn.alpha = 1;
         }
     }
     self.lockBtn.alpha             = 1;
@@ -897,6 +913,13 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     return _placeholderView;
 }
 
+-(void)setImg:(NSString*)url weexIntance:(WXSDKInstance*)instance{
+       NSURL  *ul=[Weex getFinalUrl:url weexInstance:instance];
+        [Weex setImageSource:ul.absoluteString compelete:^(UIImage *img) {
+            _placeholderView.placeholderImageView=img;
+        }];
+}
+
 
 /** 顶部的view */
 - (SPVideoPlayerTopControlView *)topView {
@@ -993,7 +1016,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [_closeBtn setImage:SPPlayerImage(@"play_close_30x30_") forState:UIControlStateNormal];
         [_closeBtn addTarget:self action:@selector(closeButtonAction:) forControlEvents:UIControlEventTouchUpInside];
         _closeBtn.hidden = YES;
-
+        
     }
     return _closeBtn;
 }
@@ -1050,7 +1073,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.repeatBtn.center = CGPointMake(selfW*0.5, selfH*0.5);
     
     self.bottomProgressView.frame = CGRectMake(0, selfH-2, selfW, 2);
-
+    
     self.closeBtn.frame = CGRectMake(0, 0, 20, 20);
     self.closeBtn.center = CGPointMake(selfW, 0);
     
@@ -1091,7 +1114,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         self.bottomView.resolutionBtn.hidden = !self.videoItem.resolutionDic.count;
         self.fullScreenMode = YES;
         self.lockBtn.hidden         = !self.isFullScreenMode;
-//        self.cutBtn.hidden          = !self.isFullScreenMode;
+        //        self.cutBtn.hidden          = !self.isFullScreenMode;
         self.cutBtn.hidden          = true;
         if (self.isCellVideo) {
             [self.topView.backButton setImage:SPPlayerImage(@"play_back_half_20x20_") forState:UIControlStateNormal];
@@ -1181,7 +1204,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     CGFloat selfH = self.bounds.size.height;
     
     self.backgroundImageView.frame = self.bounds;
-
+    
     CGFloat backButtonW = 50;
     CGFloat backButtonH = selfH*(2.0/3.0);
     CGFloat backButtonX = 0;
@@ -1265,7 +1288,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     if (!_backgroundImageView) {
         _backgroundImageView = [[UIImageView alloc] init];
         _backgroundImageView.image = SPPlayerImage(@"playemini_shadow_iphone_6x66_");
-
+        
     }
     return _backgroundImageView;
 }
@@ -1384,7 +1407,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [_playOrPauseButton setImage:SPPlayerImage(@"player_mini_pause_iphone_30x30_") forState:UIControlStateNormal];
         [_playOrPauseButton setImage:SPPlayerImage(@"player_mini_play_h_iphone_30x30_") forState:UIControlStateHighlighted];
         [_playOrPauseButton setImage:SPPlayerImage(@"player_mini_play_iphone_30x30_") forState:UIControlStateSelected];
-
+        
         [_videoSlider setThumbImage:SPPlayerImage(@"player_mini_slider_iphone_8x10_") forState:UIControlStateNormal];
         
         // 竖屏时下一集按钮被隐藏了
@@ -1402,7 +1425,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         
         
         [_videoSlider setThumbImage:SPPlayerImage(@"player_full_slider_iphone_12x15_") forState:UIControlStateNormal];
-
+        
         [_nextButton setImage:SPPlayerImage(@"player_full_next_iphone_30x30_") forState:UIControlStateNormal];
         [_nextButton setImage:SPPlayerImage(@"player_full_next_h_iphone_30x30_") forState:UIControlStateHighlighted];
         // 横屏时全屏按钮被隐藏了
@@ -1426,10 +1449,10 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     [self configerImageForSomeControlWithOrientation:currentOrientation];
     
     if (currentOrientation == UIDeviceOrientationPortrait) { // 竖屏
-
+        
         // 根据横竖屏设置某些控件的图片
         [self configerImageForSomeControlWithOrientation:currentOrientation];
- 
+        
         CGFloat playOrPauseButtonH      = selfH*(2.0/3.0);
         CGFloat playOrPauseButtonW      = playOrPauseButtonH;
         CGFloat playOrPauseButtonX      = 0;
@@ -1520,7 +1543,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         CGFloat fullScreenButtonX       = selfW-fullScreenButtonW;
         CGFloat fullScreenButtonY       = playOrPauseButtonY;
         self.fullScreenButton.frame     = CGRectMake(fullScreenButtonX, fullScreenButtonY, fullScreenButtonW, fullScreenButtonH);
-
+        
     }
     
 }
@@ -1768,12 +1791,12 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     if (rientation == UIDeviceOrientationPortrait) {
         [self.backButton setImage:SPPlayerImage(@"player_mini_back_iphone_20x20_") forState:UIControlStateNormal];
         [self.backButton setImage:SPPlayerImage(@"player_mini_back_h_iphone_20x20_") forState:UIControlStateHighlighted];
-
+        
         [_fullScreenButton setImage:SPPlayerImage(@"play_full_iphone_40x40_") forState:UIControlStateNormal];
         [_fullScreenButton setImage:SPPlayerImage(@"play_full_h_iphone_40x40_") forState:UIControlStateHighlighted];
         
     } else {
-
+        
         [self.backButton setImage:SPPlayerImage(@"player_fullBack_iphone_20x40_") forState:UIControlStateNormal];
         [self.backButton setImage:SPPlayerImage(@"player_fullBack_h_iphone_20x40_") forState:UIControlStateHighlighted];
         

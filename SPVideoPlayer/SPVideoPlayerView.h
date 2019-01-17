@@ -10,6 +10,7 @@
 #import "SPVideoPlayerControlView.h"
 #import "SPVideoItem.h"
 #import "SPVideoPlayerControlViewDelegate.h"
+#import "PlayDelegate.h"
 
 /** 播放状态发生了改变的通知名称 */
 UIKIT_EXTERN NSNotificationName const SPVideoPlayerStateChangedNSNotification;
@@ -78,6 +79,8 @@ typedef NS_ENUM(NSInteger,SPVideoPlayerLoadStatus) {
 
 @interface SPVideoPlayerView : UIView <SPVideoPlayerControlViewDelegate>
 
+
+
 /** 控件View，就是展示播放暂停，滑动条，当前时间总时间等的view */
 @property (nonatomic, strong) UIView                 *controlView;
 /** 是否从上次停止的地方继续播放，默认是YES */
@@ -139,7 +142,7 @@ typedef NS_ENUM(NSInteger,SPVideoPlayerLoadStatus) {
     3、获取播放资源
  */
 - (void)configureControlView:(UIView *)controlView videoItems:(NSArray<SPVideoItem *> *)videoItems;
-
+- (void)seekToTime:(double)dragedSeconds completionHandler:(void (^)(BOOL finished))completionHandler ;
 /**
  *  调此方法才会开始播放
  */

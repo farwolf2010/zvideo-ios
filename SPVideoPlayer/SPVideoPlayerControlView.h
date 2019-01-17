@@ -8,12 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import "SPVideoSlider.h"
+#import "PlayDelegate.h"
+#import "WXSDKInstance.h"
 
 @interface SPVideoPlayerControlView : UIView
 
 - (void)sp_playerShowControlView;
 - (void)sp_playerResetControlView;
 - (void)repeatButtonnAction:(UIButton *)sender;
+@property (nonatomic, weak) id<PlayDelegate> playDelegate;
+-(void)setImg:(NSString*)url weexIntance:(WXSDKInstance*)instance;
 @end
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
