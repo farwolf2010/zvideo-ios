@@ -155,7 +155,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
         case SPVideoPlayerPlayStateEndedPlay:      // 播放结束
         {
               _placeholder.hidden=false;
-//             [self onCompelete];
+             [self onCompelete];
             
         }
             break;
@@ -219,7 +219,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
 }
 
 /** 完成 */
-- (void)compelete{
+- (void)onCompelete{
       [self fireEvent:@"onCompletion" params:nil];
 }
 

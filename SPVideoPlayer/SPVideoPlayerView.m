@@ -485,7 +485,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)saveLastVideoPlayInfo {
     // 将当前时间存储到沙盒,下次进来的时候，就从该时间点继续播放,注意key值是每个url的md5加密,因为每一个url都有自己的当前时间，key值不能定死
     CGFloat currentTime = CMTimeGetSeconds([self.player currentTime]);
-    [[NSUserDefaults standardUserDefaults] setFloat:currentTime forKey:SPSeekTimeKey];
+//    [[NSUserDefaults standardUserDefaults] setFloat:currentTime forKey:SPSeekTimeKey];
    
     // 保存url
     [[NSUserDefaults standardUserDefaults] setObject:self.videoURL.absoluteString forKey:SPURLKey];
@@ -739,7 +739,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)moviePlayDidEnd:(NSNotification *)notification {
     [self updatePlayState:SPVideoPlayerPlayStateEndedPlay];
     // 播放结束时，更新seekTime在沙盒中的值为0，等下次播放时就可以从0开始播放，否则下次播放会从结束时开始播，然后立刻结束
-    [[NSUserDefaults standardUserDefaults] setObject:@(0.0f) forKey:SPSeekTimeKey];
+//    [[NSUserDefaults standardUserDefaults] setObject:@(0.0f) forKey:SPSeekTimeKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
     if (self.isBottomVideo && !self.isFullScreen) { // 播放完了，如果是在小屏模式 && 在bottom位置，直接关闭播放器
         self.repeatToPlay = NO;
@@ -1752,7 +1752,8 @@ typedef NS_ENUM(NSInteger, PanDirection){
     if (SPSeekTimeKey) {
         if (self.resumePlayFromLastStopPoint) {
             // 获取上一次停止播放的时间点
-            self.seekTime = [[NSUserDefaults standardUserDefaults] floatForKey:SPSeekTimeKey];
+//            self.seekTime = [[NSUserDefaults standardUserDefaults] floatForKey:SPSeekTimeKey];
+            self.seekTime =0;
             if (!self.seekTime) {
                 self.seekTime = videoItem.seekTime;
             }
