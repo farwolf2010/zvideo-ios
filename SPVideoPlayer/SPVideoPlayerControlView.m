@@ -221,9 +221,9 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 /** 播放进度发生了改变 */
 - (void)videoPlayerProgressValueChanged:(NSNotification *)notification {
     // 当前时间
-    CGFloat currentTime = [notification.userInfo[@"currentTime"] floatValue];
+    CGFloat currentTime = [notification.userInfo[@"currentTime"] floatValue]*1000;
     // 总时间
-    CGFloat totalTime = [notification.userInfo[@"totalTime"] floatValue];
+    CGFloat totalTime = [notification.userInfo[@"totalTime"] floatValue]*1000;
     // 当前时间与总时间之比
     CGFloat value = [notification.userInfo[@"value"] floatValue];
     // 进度状态，分为自然状态、快进状态、快退状态
