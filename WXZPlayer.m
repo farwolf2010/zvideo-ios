@@ -115,7 +115,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
     [Weex setImageSource:ul.absoluteString compelete:^(UIImage *img) {
         placeholder.image=img;
     }];
-    
+//     _placeholder.hidden=true;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(videoPlayerStateChanged:) name:SPVideoPlayerStateChangedNSNotification object:nil];
     
 }
@@ -140,6 +140,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
             break;
         case SPVideoPlayerPlayStatePlaying:        // 正在播放
         {
+            [self onStart];
             _placeholder.hidden=true;
         }
             break;
