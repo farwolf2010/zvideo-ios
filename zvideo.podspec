@@ -19,7 +19,8 @@ Pod::Spec.new do |s|
   s.resources = '*.bundle'
   s.ios.vendored_libraries = '*.a'
   s.ios.vendored_frameworks = '*.framework'
-
+  s.resources = 'resources/storyboard/**','resources/images/**','resources/xib/**','*.bundle'
+ 
   s.exclude_files = "Source/Exclude"
    
   s.dependency 'farwolf.weex'  

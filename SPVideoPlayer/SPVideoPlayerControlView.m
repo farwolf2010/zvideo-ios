@@ -40,6 +40,8 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 @property (nonatomic, strong) SPVideoPlayerFastView   *fastView;
 /** 锁定屏幕方向按钮 */
 @property (nonatomic, strong) UIButton                *lockBtn;
+/** 暂停播放方向按钮 */
+@property (nonatomic, strong) UIButton                *pauseBtn;
 /** 视频截图按钮 */
 @property (nonatomic, strong) UIButton                *cutBtn;
 /** 关闭按钮*/
@@ -88,7 +90,12 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         [self addSubview:self.fastView];
         [self addSubview:self.closeBtn];
         [self addSubview:self.bottomProgressView];
-        
+        [self addSubview:self.pauseBtn];
+        [self.pauseBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.width.equalTo(@(70));
+              make.height.equalTo(@(70));
+            make.center.mas_equalTo(self);
+        }];
         // 初始化时重置controlView
         [self sp_playerResetControlView];
         
@@ -153,6 +160,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     // 转化为分钟
     double minutesElapsed = floorf(fmod(seekTime, 60.0*60.0)/60.0) ;
     self.repeatBtn.hidden = YES;
+  
     switch (state) {
         case SPVideoPlayerPlayStateReadyToPlay:    // 准备播放
             self.placeholderView.alpha = 1;
@@ -168,6 +176,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             break;
         case SPVideoPlayerPlayStatePlaying:        // 正在播放
         {
+              self.pauseBtn.selected=YES;
             [self hideHUD];
             self.placeholderView.alpha = 0;
             self.bottomView.playOrPauseButton.selected = YES;
@@ -182,6 +191,8 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         }
             break;
         case SPVideoPlayerPlayStatePause:          // 暂停播放
+              self.pauseBtn.hidden=NO;
+            self.pauseBtn.selected=NO;
             self.bottomView.playOrPauseButton.selected = NO;
             [self sp_playerCancelAutoFadeOutControlView];
             if(self.playDelegate!=nil){
@@ -203,6 +214,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
             }
             [self hideHUD];
             self.repeatBtn.hidden = NO;
+            self.pauseBtn.hidden=true;
             self.playeEnd         = YES;
             self.showing          = NO;
             //            // 隐藏controlView
@@ -221,9 +233,9 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
 /** 播放进度发生了改变 */
 - (void)videoPlayerProgressValueChanged:(NSNotification *)notification {
     // 当前时间
-    CGFloat currentTime = [notification.userInfo[@"currentTime"] floatValue]*1000;
+    CGFloat currentTime = [notification.userInfo[@"currentTime"] floatValue];
     // 总时间
-    CGFloat totalTime = [notification.userInfo[@"totalTime"] floatValue]*1000;
+    CGFloat totalTime = [notification.userInfo[@"totalTime"] floatValue];
     // 当前时间与总时间之比
     CGFloat value = [notification.userInfo[@"value"] floatValue];
     // 进度状态，分为自然状态、快进状态、快退状态
@@ -606,6 +618,25 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     }
 }
 
+// 锁屏按钮的触发方法
+- (void)pauseButtonAction:(UIButton *)sender {
+    sender.selected = !sender.selected;
+    
+//    self.showing = NO;
+//    [self sp_playerShowControlView];
+//    if ([self.delegate respondsToSelector:@selector(sp_controlViewLockScreenButtonClicked:)]) {
+//        [self.delegate sp_controlViewLockScreenButtonClicked:sender];
+//    }
+//    if ([self.delegate respondsToSelector:@selector(sp_controlViePlayOrPauseButtonClicked:)]) {
+//        [self.delegate sp_controlViePlayOrPauseButtonClicked:sender];
+//    }
+//    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//       if(sender.selected )
+//        sender.hidden=true;
+//    });
+    [self playOrPauseButtonAction:_bottomView.playOrPauseButton];
+    [self sp_playerHideControlView];
+}
 
 // 锁屏按钮的触发方法
 - (void)lockScrrenButtonAction:(UIButton *)sender {
@@ -669,6 +700,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         }
     }
     self.lockBtn.alpha             = 1;
+     self.pauseBtn.alpha             = 1;
     if (self.isCellVideo) {
         self.shrink                = NO;
     }
@@ -683,6 +715,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     self.bottomView.alpha    = 0;
     self.lockBtn.alpha       = 0;
     self.cutBtn.alpha        = 0;
+    self.pauseBtn.alpha        = 0;
     self.bottomProgressView.alpha = 1;
     if (self.isFullScreenMode && !self.playeEnd && !self.isShrink) {
         SPPlayerShared.isStatusBarHidden = YES;
@@ -733,6 +766,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     _shrink = shrink;
     self.closeBtn.hidden = !shrink;
     self.bottomProgressView.hidden = shrink;
+     self.pauseBtn.hidden = shrink;
 }
 
 - (void)setFullScreenMode:(BOOL)fullScreenMode {
@@ -974,6 +1008,19 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
         _fastView.layer.masksToBounds = YES;
     }
     return _fastView;
+}
+
+/** 锁屏按钮 */
+- (UIButton *)pauseBtn {
+    if (!_pauseBtn) {
+        _pauseBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+
+        [_pauseBtn setImage:[UIImage imageNamed:@"play"] forState:UIControlStateNormal];
+        [_pauseBtn setImage:[UIImage imageNamed:@"pause"] forState:UIControlStateSelected];
+        [_pauseBtn addTarget:self action:@selector(pauseButtonAction:) forControlEvents:UIControlEventTouchUpInside];
+
+    }
+    return _pauseBtn;
 }
 
 /** 锁屏按钮 */

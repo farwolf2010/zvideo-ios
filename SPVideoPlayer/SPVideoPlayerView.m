@@ -604,7 +604,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
         if(totalTime!=0){
             per=currentTime/totalTime;
         }
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"onPlayTimer" object:nil userInfo:@{@"current":@(currentTime),@"total":@(totalTime),@"percent":@(per)}];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"onPlayTimer" object:nil userInfo:@{@"current":@(currentTime*1000),@"total":@(totalTime*1000),@"percent":@(per)}];
         
         NSArray *loadedRanges = currentItem.seekableTimeRanges;
         if (loadedRanges.count > 0 && currentItem.duration.timescale != 0) {
