@@ -107,17 +107,24 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
     [c setImg:_img weexIntance:self.weexInstance];
     UIImageView *placeholder=[UIImageView new];
     _placeholder=placeholder;
-    [self.view addSubview:placeholder];
+//    [self.view addSubview:placeholder];
+    [video addSubviewFull:placeholder];
     [placeholder mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.mas_equalTo(0);
     }];
+    for(UIView *v in video.subviews){
+        if(v!=_placeholder){
+            [video bringSubviewToFront:v];
+        }
+    }
+   
     NSURL  *ul=[Weex getFinalUrl:_img weexInstance:self.weexInstance];
     [Weex setImageSource:ul.absoluteString compelete:^(UIImage *img) {
         placeholder.image=img;
     }];
-     _placeholder.hidden=true;
+     _placeholder.hidden=false;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(videoPlayerStateChanged:) name:SPVideoPlayerStateChangedNSNotification object:nil];
-    
+
 }
 
 

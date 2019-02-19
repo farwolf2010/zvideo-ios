@@ -96,6 +96,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
               make.height.equalTo(@(70));
             make.center.mas_equalTo(self);
         }];
+        [self bringSubviewToFront:self.pauseBtn];
         // 初始化时重置controlView
         [self sp_playerResetControlView];
         
