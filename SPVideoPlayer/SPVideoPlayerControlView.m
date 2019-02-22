@@ -256,8 +256,11 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     NSString *currentTimeString;
     // 更新slider
     if (!self.draggedBySlider) { // 如果是因为滑动slider而导致的快进或快退，则可以不用更新slider的值，如果不加判断,当滑动slider时，就更新了2次slider()。如果2次更新在同一线程上，可以不用加此判断，如果在不同线程上，不加判断slider的跟踪按钮会有小小的闪跳(这里可不加，加了更好)
+       
         self.bottomView.videoSlider.value       = value;
         self.bottomProgressView.progress = value;
+    }else{
+        NSLog(@"drag");
     }
     
     // 更新slider

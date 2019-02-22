@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(strong,nonatomic) NSString *src;
 @property(strong,nonatomic) NSString *title;
 @property(strong,nonatomic) NSString *img;
+@property(nonatomic) NSInteger *position;
 @property(strong,nonatomic)  SPVideoPlayerView *video;
 @property(strong,nonatomic)  UIImageView *placeholder;
 @property(nonatomic) BOOL autoPlay;

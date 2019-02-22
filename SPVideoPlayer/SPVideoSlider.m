@@ -41,9 +41,10 @@
 
 // 获取滑动条上跟踪按钮的bounds
 - (CGRect)thumbRect {
-    return [self thumbRectForBounds:self.bounds
+    CGRect r= [self thumbRectForBounds:self.bounds
                                       trackRect:[self trackRectForBounds:self.bounds]
                                           value:self.value];
+    return r;
 }
 
 - (UIImageView *)thumbBackgroundImageView {

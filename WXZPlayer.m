@@ -31,6 +31,11 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
        _title = attributes[@"title"];
         _img = attributes[@"img"];
        _autoPlay = [attributes[@"autoPlay"] boolValue];
+       if(attributes[@"position"])
+        _position = [attributes[@"position"] intValue];
+       else{
+           _position=0;
+       }
    }
     return self;
 }
@@ -55,6 +60,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
         _videoItem.videoURL         = [NSURL URLWithString:self.src];
         _videoItem.placeholderImage = [UIImage imageNamed:@"qyplayer_aura2_background_normal_iphone_375x211_"];
         // playerView的父视图
+        _videoItem.seekTime=_position;    
         _videoItem.fatherView       = self.view;
     
     return _videoItem;
@@ -204,7 +210,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
 
 -(void)seek:(double)time{
    
-    [_video seekToTime:time completionHandler:^(BOOL finished) {
+    [_video seekToTime:time/1000 completionHandler:^(BOOL finished) {
         
     }];
 }
