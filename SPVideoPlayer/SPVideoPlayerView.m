@@ -451,7 +451,7 @@ typedef NS_ENUM(NSInteger, PanDirection){
 - (void)seekToTime:(double)dragedSeconds completionHandler:(void (^)(BOOL finished))completionHandler {
     self.dragedSeconds = dragedSeconds;
     if (self.player.currentItem.status == AVPlayerItemStatusReadyToPlay) {
-        
+    
         [self.player pause];
         // 如果self.seekTime有值(不能判断dragedSeconds，因为dragedSeconds可能是快进快退时的目标时间)，说明是从上一次播放的时间点续播或者切换分辨率
         if (self.seekTime && !self.isChangeResolution) { // 续播等待状态

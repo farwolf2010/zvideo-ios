@@ -31,8 +31,8 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
        _title = attributes[@"title"];
         _img = attributes[@"img"];
        _autoPlay = [attributes[@"autoPlay"] boolValue];
-       if(attributes[@"position"])
-        _position = [attributes[@"position"] intValue];
+       if(attributes[@"pos"])
+        _position = [attributes[@"pos"] longLongValue]/1000;
        else{
            _position=0;
        }
@@ -72,6 +72,11 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
     _title = attributes[@"title"];
       _img = attributes[@"img"];
     _autoPlay = [attributes[@"autoPlay"] boolValue];
+    if(attributes[@"pos"])
+        _position = [attributes[@"pos"] longLongValue]/1000;
+    else{
+        _position=0;
+    }
     if(_src!=nil||_title!=nil){
         [_video removeFromSuperview];
         SPVideoPlayerView *video=[[SPVideoPlayerView alloc]init];
@@ -82,6 +87,7 @@ WX_EXPORT_METHOD(@selector(toggleFullScreen))
     
 //        setImageSource
         video.backgroundColor=[UIColor blackColor];
+        self.videoItem.seekTime=_position;
         [video configureControlView:nil videoItem:self.videoItem];
         if(_autoPlay){
             [video startPlay];

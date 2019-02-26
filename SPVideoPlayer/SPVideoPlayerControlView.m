@@ -165,7 +165,7 @@ static const CGFloat SPPlayerControlBarAutoFadeOutTimeInterval = 0.35f;
     switch (state) {
         case SPVideoPlayerPlayStateReadyToPlay:    // 准备播放
             self.placeholderView.alpha = 1;
-            if (seekTime && minutesElapsed >= 1) {
+            if (seekTime && minutesElapsed >= 0) {
                 [self.placeholderView setPromptLabelTitle:[NSString stringWithFormat:@"上次观看至%.0f分钟,正在续播",minutesElapsed]];
             } else {
                 [self.placeholderView setPromptLabelTitle:@"即将播放"];
